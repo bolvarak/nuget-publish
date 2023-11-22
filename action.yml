@@ -1,0 +1,205 @@
+## Define the author of this action
+author: 'bolvarak'
+
+## Define our branding details
+branding:
+  color: blue
+  icon: chevron-up
+
+## Define the name of this action
+name: 'NuGet Build & Publish'
+
+## Describe this action
+description: 'Build a .NET project and publish it to a NuGet Server.'
+
+## Define the inputs to this action
+inputs:
+
+  configuration:
+    default: 'Release'
+    description: 'The build configuration to use when building the project or solution.  (values: Debug|Release, default: Release)'
+    required: false
+
+  github-organization:
+    description: 'The GitHub Organization to publish the generated package to which forces the use of GitHub''s NuGet Servers.'
+    required: false
+
+  nuget-api-key:
+    description: 'The API key which is used to authenticate with the NuGet server.'
+    required: true
+
+  nuget-auth-for-build:
+    default: 'false'
+    description: 'Flag that denotes whether to authenticate with the NuGet Server for the build process.'
+    required: false
+
+  nuget-password:
+    description: 'The password with which to authenticate with the NuGet Server during the build process.'
+    required: false
+
+  nuget-username:
+    description: 'The username with which to authenticate with the NuGet Server during the build process.'
+    required: false
+
+  nuspec-file:
+    description: 'The path, relative to the root of the repository, to the NuSpec file.'
+    required: false
+
+  output:
+    default: 'Silent'
+    description: 'The output format of the application.  (values: Json|Plain|Silent|Xml, default: Silent)'
+    required: false
+
+  package-name:
+    description: 'The name of the package to generate, that will be published to the NuGet Server.'
+    required: false
+
+  platform:
+    default: 'AnyCpu'
+    description: 'The platform to use when building the project or solution.  (values: AnyCpy|Arm64|x64|x86, default: AnyCpu)'
+    required: false
+
+  project:
+    description: 'The path, relative to the root of the repository, to the project or solution file to be packaged.'
+    required: true
+
+  runtime:
+    default: 'net8.x'
+    description: 'The runtime to use when building the project or solution.  (values: net8.x|net7.x|net6.x, default: net8.x)'
+    required: false
+
+  scan-for-package-name:
+    default: 'false'
+    description: 'Flag that denotes whether to scan the project or solution file in an attempt to find the package name preferring PackageId over AssemblyName over <project>.  (default: false)'
+    required: false
+
+  verbosity:
+    default: 'Minimal'
+    description: 'The output level for the build process.  (values: Detailed|Diagnostic|Minimal|Normal|Quiet, default: Minimal)'
+    required: false
+
+  version:
+    description: 'The static version for the NuGet package.'
+    required: false
+
+## Define the outputs from this action
+outputs:
+
+  NUGET_CONFIG:
+    description: 'The generated NuGet.Config file if the nuget-auth-for-build flag is set to true.'
+    value: '${{ steps.build-and-publish.NUGET_CONFIG }}'
+
+  PACKAGE_NAME:
+    description: 'The name of the generated package that was published to the NuGet Server.'
+    value: '${{ steps.build-and-publish.PACKAGE_NAME }}'
+
+  PACKAGE_PATH:
+    description: 'The path to the generated package that was published to the NuGet Server.'
+    value: '${{ steps.build-and-publish.PACKAGE_PATH }}'
+
+  PROCESS_BUILD_ERROR:
+    description: 'The standard error from the process responsible for building the project.'
+    value: '${{ steps.build-and-publish.PROCESS_BUILD_ERROR }}'
+
+  PROCESS_BUILD_OUTPUT:
+    description: 'The standard output from the process responsible for building the project.'
+    value: '${{ steps.build-and-publish.PROCESS_BUILD_OUTPUT }}'
+
+  PROCESS_CLEAN_ERROR:
+    description: 'The standard error from the process responsible for cleaning the project.'
+    value: '${{ steps.build-and-publish.PROCESS_CLEAN_ERROR }}'
+
+  PROCESS_CLEAN_OUTPUT:
+    description: 'The standard output from the process responsible for cleaning the project.'
+    value: '${{ steps.build-and-publish.PROCESS_CLEAN_OUTPUT }}'
+
+  PROCESS_NUGET_PUSH_ERROR:
+    description: 'The standard error from the process responsible for pushing the package to the NuGet Server.'
+    value: '${{ steps.build-and-publish.PROCESS_NUGET_PUSH_ERROR }}'
+
+  PROCESS_NUGET_PUSH_OUTPUT:
+    description: 'The standard output from the process responsible for pushing the package to the NuGet Server.'
+    value: '${{ steps.build-and-publish.PROCESS_NUGET_PUSH_OUTPUT }}'
+
+  PROCESS_PACK_ERROR:
+    description: 'The standard error from the process responsible for packing the project.'
+    value: '${{ steps.build-and-publish.PROCESS_PACK_ERROR }}'
+
+  PROCESS_PACK_OUTPUT:
+    description: 'The standard output from the process responsible for packing the project.'
+    value: '${{ steps.build-and-publish.PROCESS_PACK_OUTPUT }}'
+
+  PROCESS_RESTORE_ERROR:
+    description: 'The standard error from the process responsible for restoring the project.'
+    value: '${{ steps.build-and-publish.PROCESS_RESTORE_ERROR }}'
+
+  PROCESS_RESTORE_OUTPUT:
+    description: 'The standard output from the process responsible for restoring the project.'
+    value: '${{ steps.build-and-publish.PROCESS_RESTORE_OUTPUT }}'
+
+  VERSION:
+    description: 'The version of the generated package that was published to the NuGet Server.'
+    value: '${{ steps.build-and-publish.VERSION }}'
+
+## Define the runtime of this action
+runs:
+  using: 'composite'
+  steps:
+
+    ## We'll need Docker
+    - name: 'Setup Docker'
+      uses: 'docker/setup-qemu-action@v3'
+
+    ## Build & Publish
+    - name: 'Build & Publish NuGet Package'
+      id: 'build-and-publish'
+      env:
+        DOCKER_IMAGE: 'ghcr.io/bolvarak/dotnet-nuget-publish:${{ inputs.runtime }}'
+        GITHUB_ACTOR: '${{ github.actor }}'
+        GITHUB_ENV: '${{ env.GITHUB_ENV }}'
+        GITHUB_OUTPUT: '${{ env.GITHUB_OUTPUT }}'
+        GITHUB_TRIGGERING_ACTOR: '${{ github.triggering_actor }}'
+        GITHUB_WORKSPACE: '${{ env.GITHUB_WORKSPACE }}'
+        INPUT_CONFIGURATION: '${{ inputs.configuration }}'
+        INPUT_GITHUB_ORGANIZATION: '${{ inputs.github-organization }}'
+        INPUT_NUGET_API_KEY: '${{ inputs.nuget-api-key }}'
+        INPUT_NUGET-AUTH_FOR_BUILD: '${{ inputs.nuget-auth-for-build }}'
+        INPUT_NUGET_PASSWORD: '${{ inputs.nuget-password }}'
+        INPUT_NUGET_USERNAME: '${{ inputs.nuget-username }}'
+        INPUT_NUSPEC_FILE: '${{ inputs.nuspec-file }}'
+        INPUT_OUTPUT: '${{ inputs.output }}'
+        INPUT_PACKAGE_NAME: '${{ inputs.package-name }}'
+        INPUT_PROJECT: '${{ inputs.project }}'
+        INPUT_PLATFORM: '${{ inputs.platform }}'
+        INPUT_RUNTIME: '${{ inputs.runtime }}'
+        INPUT_SCAN_FOR_PACKAGE_NAME: '${{ inputs.scan-for-package-name }}'
+        INPUT_VERBOSITY: '${{ inputs.verbosity }}'
+        INPUT_VERSION: '${{ inputs.version }}'
+      shell: 'bash'
+      run: |
+        docker run \
+          --env-file "${GITHUB_ENV}" \
+          --env "GITHUB_ENV=${GITHUB_ENV}" \
+          --env "GITHUB_OUTPUT=${GITHUB_OUTPUT}" \
+          --interactive \
+          --network 'host' \
+          --rm \
+          --volume "${GITHUB_ENV}:${GITHUB_ENV}" \
+          --volume "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
+          --volume "${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}" \
+          "${DOCKER_IMAGE}" \
+            publish \
+              --configuration "${INPUT_CONFIGURATION}" \
+              --github-organization "${INPUT_GITHUB_ORGANIZATION}" \
+              --nuget-api-key "${INPUT_NUGET_API_KEY}" \
+              --nuget-auth-for-build "${INPUT_NUGET_AUTH_FOR_BUILD}" \
+              --nuget-password "${INPUT_NUGET_PASSWORD}" \
+              --nuget-username "${INPUT_NUGET_USERNAME}" \
+              --nuspec-file "${INPUT_NUSPEC_FILE}" \
+              --output "${INPUT_OUTPUT}" \
+              --package-name "${INPUT_PACKAGE_NAME}" \
+              --project "${INPUT_PROJECT}" \
+              --scan-for-package-name "${INPUT_SCAN_FOR_PACKAGE_NAME}" \
+              --verbosity "${INPUT_VERBOSITY}" \
+              --version "${INPUT_VERSION}" \
+              --working-directory "${GITHUB_WORKSPACE}";
