@@ -139,33 +139,42 @@ public class NuGetPublishService
             // Localize the JSON string
             string json = await response.Content.ReadAsStringAsync(stoppingToken);
 
-            // Read the response as a string then localize it into a JSON document
-            JsonDocument document = JsonDocument.Parse(json);
-
-            // Check for a version match then reset the found flag
-            if (document.RootElement.TryGetProperty("versions", out JsonElement versions) && JsonSerializer
-                    .Deserialize<NuGetPublishIndexModel>(json).Versions.Contains(_options.Version))
+            // Check the JSON response for a GitHub server
+            if (json.ToLower().Contains("catalogEntry"))
             {
-                // Print the message to the console
-                await PrintMessageAndExitAsync(
-                    $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
-                    LogLevel.Warning, stoppingToken);
+                // Localize the response document
+                NuGetPublishGitHubIndexModel document = JsonSerializer.Deserialize<NuGetPublishGitHubIndexModel>(json);
 
-                // Exit the application
-                return;
+                // Check for a version match then reset the found flag
+                if (document.Items.Any(i => i.Items.Any(p => p.CatalogEntry.Version == _options.Version)))
+                {
+                    // Print the message to the console
+                    await PrintMessageAndExitAsync(
+                        $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
+                        LogLevel.Warning, stoppingToken);
+
+                    // Exit the application
+                    return;
+                }
             }
 
-            // Check again using the GitHub structure
-            if (JsonSerializer.Deserialize<NuGetPublishGitHubIndexModel>(json)?.Items
-                    ?.Any(i => i.Items.Any(p => p.CatalogEntry.Version == _options.Version)) ?? false)
+            // Otherwise roll with the standard NuGet server
+            else
             {
-                // Print the message to the console
-                await PrintMessageAndExitAsync(
-                    $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
-                    LogLevel.Warning, stoppingToken);
+                // Localize the response document
+                NuGetPublishIndexModel document = JsonSerializer.Deserialize<NuGetPublishIndexModel>(json);
 
-                // Exit the application
-                return;
+                // Check for a version match then reset the found flag
+                if (document.Versions.Contains(_options.Version))
+                {
+                    // Print the message to the console
+                    await PrintMessageAndExitAsync(
+                        $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
+                        LogLevel.Warning, stoppingToken);
+
+                    // Exit the application
+                    return;
+                }
             }
         }
 
@@ -870,7 +879,8 @@ public class NuGetPublishService
         _outputs.ProcessNuGetPushError = pushOutput.Item2;
 
         // Check for errors
-        if (Regex.IsMatch(pushOutput.Item1, "error.*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline))
+        if (Regex.IsMatch(pushOutput.Item1, "error.*",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline))
             await PrintMessageAndExitAsync(
                 $"{Regex.Match(pushOutput.Item1, "error.*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline).Value}",
                 LogLevel.Error, stoppingToken);
