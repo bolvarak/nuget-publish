@@ -136,12 +136,15 @@ public class NuGetPublishService
         // Check for a 404
         if (response.StatusCode is HttpStatusCode.OK)
         {
+            // Localize the JSON string
+            string json = await response.Content.ReadAsStringAsync(stoppingToken);
+
             // Read the response as a string then localize it into a JSON document
-            JsonDocument document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(stoppingToken));
+            JsonDocument document = JsonDocument.Parse(json);
 
             // Check for a version match then reset the found flag
-            if (document.RootElement.TryGetProperty("versions", out JsonElement versions) &&
-                versions.EnumerateArray().Any(v => v.GetString() == _options.Version))
+            if (document.RootElement.TryGetProperty("versions", out JsonElement versions) && JsonSerializer
+                    .Deserialize<NuGetPublishIndexModel>(json).Versions.Contains(_options.Version))
             {
                 // Print the message to the console
                 await PrintMessageAndExitAsync(
@@ -153,9 +156,8 @@ public class NuGetPublishService
             }
 
             // Check again using the GitHub structure
-            if (document.RootElement.TryGetProperty("items", out JsonElement items) && items.GetProperty("items")
-                    .EnumerateArray().Select(i => i.GetProperty("catalogEntry").GetProperty("version").GetString())
-                    .Any(v => v == _options.Version))
+            if (JsonSerializer.Deserialize<NuGetPublishGitHubIndexModel>(json)?.Items
+                    ?.Any(i => i.Items.Any(p => p.CatalogEntry.Version == _options.Version)) ?? false)
             {
                 // Print the message to the console
                 await PrintMessageAndExitAsync(
