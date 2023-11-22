@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -53,14 +54,8 @@ public class NuGetPublishService
     ///     This method instantiates our service provider with <paramref name="options" /> from the CLI.
     /// </summary>
     /// <param name="options">This service options from the CLI.</param>
-    private NuGetPublishService(NuGetPublishPublishInputModel options)
-    {
-        // Set the options into the instance
-        _options = options;
+    private NuGetPublishService(NuGetPublishPublishInputModel options) => _options = options;
 
-        // Reset the base URL of the HTTP client to the NuGet Server
-        HttpClient.BaseAddress = new Uri(_options.GetNuGetServer(), UriKind.Absolute);
-    }
 
     /// <summary>
     ///     This method authenticates with the NuGet Server for dependencies during the build process.
@@ -120,67 +115,84 @@ public class NuGetPublishService
     ///     This method checks for an existing package then publishes the new package if necessary.
     /// </summary>
     /// <param name="stoppingToken">The cancellation token to stop the command.</param>
+    /// <param name="authorize">Denotes whether to authorize the request or not.</param>
     /// <returns>An awaitable <see cref="Task" /> that resolves when the package verified or published.</returns>
-    private async Task CheckForUpdateAsync(CancellationToken stoppingToken = default)
+    private async Task CheckForUpdateAsync(CancellationToken stoppingToken = default, bool authorize = false)
     {
         // Sent the message notifying the package name and version
-        PrintMessage(
-            $"Checking for updates to {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}...");
+        PrintMessage(authorize
+            ? $"Authorizing check update request for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}..."
+            : $"Checking for updates to {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}...");
 
         // Define our request
-        using HttpRequestMessage request = new(HttpMethod.Get, _options.GetNuGetPackageIndex());
+        HttpRequestMessage request = new(HttpMethod.Get, _options.GetNuGetPackageIndexUrl());
+
+        // Check for a GitHub NuGet server then add the authorization header to the request
+        if (authorize)
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
+                Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.NugetUsername}:{_options.NugetPassword}")));
 
         // Send the request
-        using HttpResponseMessage response = await HttpClient.SendAsync(request, stoppingToken);
+        HttpResponseMessage response = await HttpClient.SendAsync(request, stoppingToken);
 
-        // Check for a 404
+        // Check for 401 unauthorized without authorization
+        if (response.StatusCode is HttpStatusCode.Unauthorized && !authorize)
+        {
+            // Execute this method again with authorization enabled
+            await CheckForUpdateAsync(stoppingToken, true);
+
+            // We're done
+            return;
+        }
+
+        // Check for a 401 unauthorized with authorization
+        if (response.StatusCode is HttpStatusCode.Unauthorized && authorize)
+        {
+            // Print the message to the console
+            await PrintMessageAndExitAsync(
+                $"Unable to authenticate with NuGet Server at {_options.GetNuGetPackageIndexUrl()}.", LogLevel.Error,
+                stoppingToken);
+
+            // We're done
+            return;
+        }
+
+        // Check for a 200 OK
         if (response.StatusCode is HttpStatusCode.OK)
         {
-            // Localize the JSON string
-            string json = await response.Content.ReadAsStringAsync(stoppingToken);
+            // Deserialize the JSON response
+            NuGetPublishIndexModel document = await JsonSerializer.DeserializeAsync<NuGetPublishIndexModel>(
+                await response.Content.ReadAsStreamAsync(stoppingToken), null as JsonSerializerOptions, stoppingToken);
 
-            // Check the JSON response for a GitHub server
-            if (json.ToLower().Contains("catalogEntry"))
+            // Check the document for the version we're trying to publish
+            if (document.Versions.Any(v => v == _options.Version))
             {
-                // Localize the response document
-                NuGetPublishGitHubIndexModel document = JsonSerializer.Deserialize<NuGetPublishGitHubIndexModel>(json);
 
-                // Check for a version match then reset the found flag
-                if (document.Items.Any(i => i.Items.Any(p => p.CatalogEntry.Version == _options.Version)))
-                {
-                    // Print the message to the console
-                    await PrintMessageAndExitAsync(
-                        $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
-                        LogLevel.Warning, stoppingToken);
+                // Print the message to the console
+                await PrintMessageAndExitAsync(
+                    $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}.",
+                    LogLevel.Error, stoppingToken);
 
-                    // Exit the application
-                    return;
-                }
+                // Exit the application
+                return;
             }
+        }
 
-            // Otherwise roll with the standard NuGet server
-            else
-            {
-                // Localize the response document
-                NuGetPublishIndexModel document = JsonSerializer.Deserialize<NuGetPublishIndexModel>(json);
+        // Check the response status code
+        if (response.StatusCode is not HttpStatusCode.OK and not HttpStatusCode.NotFound)
+        {
+            // Print the message to the console
+            await PrintMessageAndExitAsync(
+                $"Unable to check for updates to {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}.",
+                LogLevel.Critical, stoppingToken);
 
-                // Check for a version match then reset the found flag
-                if (document.Versions.Contains(_options.Version))
-                {
-                    // Print the message to the console
-                    await PrintMessageAndExitAsync(
-                        $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
-                        LogLevel.Warning, stoppingToken);
-
-                    // Exit the application
-                    return;
-                }
-            }
+            // Exit the application
+            return;
         }
 
         // Print the message to the console
         PrintMessage(
-            $"No existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.");
+            $"No existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}.");
 
         // Push the package to the NuGet Server
         await PublishPackageAsync(stoppingToken);

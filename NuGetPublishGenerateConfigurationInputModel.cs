@@ -84,14 +84,13 @@ public class NuGetPublishGenerateConfigurationInputModel
     /// </summary>
     /// <returns>The NuGet Server Index URL.</returns>
     public string GetNuGetServerIndex() =>
-        $"{GetNuGetServer()}{(GitHubOrganization?.Trim() is not null ? "/index.json" : "/v3/index.json")}";
+        $"{GetNuGetServer()}{(GetNuGetServerIsGitHub() ? "/index.json" : "/v3/index.json")}";
 
     /// <summary>
     ///     This method returns whether the NuGet Server is GitHub or not.
     /// </summary>
     /// <returns>A flag denoting whether the NuGet Server is GitHub or not.</returns>
-    public bool GetNuGetServerIsGitHub() => GitHubOrganization?.Trim() is not null &&
-                                            GetNuGetServer() == $"{GitHubNugetServer}/{GitHubOrganization.Trim()}";
+    public bool GetNuGetServerIsGitHub() => !string.IsNullOrEmpty(GitHubOrganization) && !string.IsNullOrWhiteSpace(GitHubOrganization);
 
     /// <summary>
     ///     This method returns the NuGet Source Name.
