@@ -106,7 +106,7 @@ This action supports multiple different .NET runtimes.  The table below shows th
 ### Basic Usage
 
 ```yaml
-- uses: 'bolvarak/dotnet-nuget-publish@main'
+- uses: 'bolvarak/nuget-publish@main'
   with:
     nuget-api-key: ${{ secrets.NUGET_API_KEY | secrets.GITHUB_TOKEN }}
     project: 'src/MyProject/MyProject.csproj'
