@@ -123,5 +123,5 @@ public class NuGetPublishPublishInputModel : NuGetPublishGenerateConfigurationIn
     /// <param name="packageName">The name of the package.</param>
     /// <returns>The NuGet Package Index URL.</returns>
     public string GetNuGetPackageIndex(string packageName = null) =>
-        $"{GetNuGetServer()}{(GitHubOrganization?.Trim() is not null ? $"{(packageName ?? PackageName).Trim()}/download/index.json" : $"{(packageName ?? PackageName).Trim()}/index.json")}";
+        $"{(packageName ?? PackageName).Trim()}/index.json";
 }

@@ -136,14 +136,26 @@ public class NuGetPublishService
         // Check for a 404
         if (response.StatusCode is HttpStatusCode.OK)
         {
-            // Read the response
-            NuGetPushPackageIndexModel body = await JsonSerializer
-                .DeserializeAsync<NuGetPushPackageIndexModel>(
-                    await response.Content.ReadAsStreamAsync(stoppingToken),
-                    null as JsonSerializerOptions, stoppingToken).AsTask();
+            // Read the response as a string then localize it into a JSON document
+            JsonDocument document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(stoppingToken));
 
             // Check for a version match then reset the found flag
-            if (body.Versions.Contains(_options.Version))
+            if (document.RootElement.TryGetProperty("versions", out JsonElement versions) &&
+                versions.EnumerateArray().Any(v => v.GetString() == _options.Version))
+            {
+                // Print the message to the console
+                await PrintMessageAndExitAsync(
+                    $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetServerIndex()}.",
+                    LogLevel.Warning, stoppingToken);
+
+                // Exit the application
+                return;
+            }
+
+            // Check again using the GitHub structure
+            if (document.RootElement.TryGetProperty("items", out JsonElement items) && items.GetProperty("items")
+                    .EnumerateArray().Select(i => i.GetProperty("catalogEntry").GetProperty("version").GetString())
+                    .Any(v => v == _options.Version))
             {
                 // Print the message to the console
                 await PrintMessageAndExitAsync(
