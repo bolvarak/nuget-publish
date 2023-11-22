@@ -1,0 +1,25 @@
+name: 'Action Release'
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+
+  release:
+    name: 'Release Action'
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'write'
+    steps:
+
+      ## We'll need to checkout our repository
+      - name: 'Repository Checkout'
+        uses: 'actions/checkout@v4'
+
+      ## Release our Action
+      - name: 'Release Action'
+        uses: 'ncipollo/release-action@v1.13.0'
+        with:
+          bodyFile: 'release-body.md'

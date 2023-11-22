@@ -1,0 +1,45 @@
+name: 'Docker Build & Push'
+on:
+  workflow_run:
+    branches:
+      - 'main'
+    types:
+      - 'completed'
+    workflows:
+      - 'Image Sync'
+
+jobs:
+
+  ## Build & Push Docker Image
+  build-and-push:
+    name: 'Docker Image Build & Push'
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      packages: 'write'
+    strategy:
+        matrix:
+            branch: [ 'net8.x', 'net7.x', 'net6.x' ]
+    steps:
+
+      ## Checkout the repository
+      - name: 'Checkout ${{ matrix.branch }}'
+        uses: 'actions/checkout@v4'
+        with:
+            ref: '${{ matrix.branch }}'
+
+      ## Authenticate with the Docker Registry
+      - name: 'Registry Authentication'
+        uses: 'docker/login-action@v3'
+        with:
+          registry: 'ghcr.io'
+          username: '${{ github.actor }}'
+          password: '${{ secrets.github_token }}'
+
+      ## Build & Push the Docker Image
+      - name: 'Build & Push Docker Image'
+        uses: 'docker/build-push-action@v5.1.0'
+        with:
+          context: '.'
+          push: true
+          tags: 'ghcr.io/${{ github.repository }}:${{ matrix.branch }}'
