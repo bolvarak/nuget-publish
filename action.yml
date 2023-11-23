@@ -154,7 +154,7 @@ runs:
     - name: 'Build & Publish NuGet Package'
       id: 'build-and-publish'
       env:
-        DOCKER_IMAGE: 'ghcr.io/bolvarak/dotnet-nuget-publish:${{ inputs.runtime }}'
+        DOCKER_IMAGE: 'ghcr.io/bolvarak/nuget-publish:${{ inputs.runtime }}'
         GITHUB_ACTOR: '${{ github.actor }}'
         GITHUB_ENV: '${{ env.GITHUB_ENV }}'
         GITHUB_OUTPUT: '${{ env.GITHUB_OUTPUT }}'
