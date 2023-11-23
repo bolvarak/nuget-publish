@@ -160,27 +160,14 @@ runs:
         GITHUB_OUTPUT: '${{ env.GITHUB_OUTPUT }}'
         GITHUB_TRIGGERING_ACTOR: '${{ github.triggering_actor }}'
         GITHUB_WORKSPACE: '${{ env.GITHUB_WORKSPACE }}'
-        INPUT_CONFIGURATION: '${{ inputs.configuration }}'
-        INPUT_GITHUB_ORGANIZATION: '${{ inputs.github-organization }}'
-        INPUT_NUGET_API_KEY: '${{ inputs.nuget-api-key }}'
-        INPUT_NUGET-AUTH_FOR_BUILD: '${{ inputs.nuget-auth-for-build }}'
-        INPUT_NUGET_PASSWORD: '${{ inputs.nuget-password }}'
-        INPUT_NUGET_USERNAME: '${{ inputs.nuget-username }}'
-        INPUT_NUSPEC_FILE: '${{ inputs.nuspec-file }}'
-        INPUT_OUTPUT: '${{ inputs.output }}'
-        INPUT_PACKAGE_NAME: '${{ inputs.package-name }}'
-        INPUT_PROJECT: '${{ inputs.project }}'
-        INPUT_PLATFORM: '${{ inputs.platform }}'
-        INPUT_RUNTIME: '${{ inputs.runtime }}'
-        INPUT_SCAN_FOR_PACKAGE_NAME: '${{ inputs.scan-for-package-name }}'
-        INPUT_VERBOSITY: '${{ inputs.verbosity }}'
-        INPUT_VERSION: '${{ inputs.version }}'
       shell: 'bash'
       run: |
         docker run \
           --env-file "${GITHUB_ENV}" \
+          --env "GITHUB_ACTOR=${GITHUB_ACTOR}" \
           --env "GITHUB_ENV=${GITHUB_ENV}" \
           --env "GITHUB_OUTPUT=${GITHUB_OUTPUT}" \
+          --env "GITHUB_TRIGGERING_ACTOR=${GITHUB_TRIGGERING_ACTOR}" \
           --interactive \
           --network 'host' \
           --rm \
@@ -189,17 +176,18 @@ runs:
           --volume "${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}" \
           "${DOCKER_IMAGE}" \
             publish \
-              --configuration "${INPUT_CONFIGURATION}" \
-              --github-organization "${INPUT_GITHUB_ORGANIZATION}" \
-              --nuget-api-key "${INPUT_NUGET_API_KEY}" \
-              --nuget-auth-for-build "${INPUT_NUGET_AUTH_FOR_BUILD}" \
-              --nuget-password "${INPUT_NUGET_PASSWORD}" \
-              --nuget-username "${INPUT_NUGET_USERNAME}" \
-              --nuspec-file "${INPUT_NUSPEC_FILE}" \
-              --output "${INPUT_OUTPUT}" \
-              --package-name "${INPUT_PACKAGE_NAME}" \
-              --project "${INPUT_PROJECT}" \
-              --scan-for-package-name "${INPUT_SCAN_FOR_PACKAGE_NAME}" \
-              --verbosity "${INPUT_VERBOSITY}" \
-              --version "${INPUT_VERSION}" \
+              --configuration '${{ inputs.configuration }}' \
+              --github-organization '${{ inputs.github-organization }}' \
+              --nuget-api-key '${{ inputs.nuget-api-key }}' \
+              --nuget-auth-for-build '${{ inputs.nuget-auth-for-build }}' \
+              --nuget-password '${{ inputs.nuget-password }}' \
+              --nuget-username '${{ inputs.nuget-username }}' \
+              --nuspec-file '${{ inputs.nuspec-file }}' \
+              --output '${{ inputs.output }}' \
+              --package-name '${{ inputs.package-name }}' \
+              --platform '${{ inputs.platform }}' \
+              --project '${{ inputs.project }}' \
+              --scan-for-package-name '${{ inputs.scan-for-package-name }}' \
+              --verbosity '${{ inputs.verbosity }}' \
+              --version '${{ inputs.version }}' \
               --working-directory "${GITHUB_WORKSPACE}";
