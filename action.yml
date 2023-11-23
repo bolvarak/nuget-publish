@@ -153,28 +153,22 @@ runs:
     ## Build & Publish
     - name: 'Build & Publish NuGet Package'
       id: 'build-and-publish'
-      env:
-        DOCKER_IMAGE: 'ghcr.io/bolvarak/nuget-publish:${{ inputs.runtime }}'
-        GITHUB_ACTOR: '${{ github.actor }}'
-        GITHUB_ENV: '${{ env.GITHUB_ENV }}'
-        GITHUB_OUTPUT: '${{ env.GITHUB_OUTPUT }}'
-        GITHUB_TRIGGERING_ACTOR: '${{ github.triggering_actor }}'
-        GITHUB_WORKSPACE: '${{ env.GITHUB_WORKSPACE }}'
       shell: 'bash'
       run: |
         docker run \
-          --env-file "${GITHUB_ENV}" \
-          --env "GITHUB_ACTOR=${GITHUB_ACTOR}" \
-          --env "GITHUB_ENV=${GITHUB_ENV}" \
-          --env "GITHUB_OUTPUT=${GITHUB_OUTPUT}" \
-          --env "GITHUB_TRIGGERING_ACTOR=${GITHUB_TRIGGERING_ACTOR}" \
+          --env-file '${{ env.GITHUB_ENV }}' \
+          --env 'GITHUB_ACTOR=${{ github.actor }}' \
+          --env 'GITHUB_ENV=${{ env.GITHUB_ENV }}' \
+          --env 'GITHUB_OUTPUT=${{ env.GITHUB_OUTPUT }}' \
+          --env 'GITHUB_TRIGGERING_ACTOR=${{ github.triggering_actor }}' \
+          --env 'GITHUB_WORKSPACE=${{ github.workspace }}' \
           --interactive \
           --network 'host' \
           --rm \
-          --volume "${GITHUB_ENV}:${GITHUB_ENV}" \
-          --volume "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
-          --volume "${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}" \
-          "${DOCKER_IMAGE}" \
+          --volume '${{ env.GITHUB_ENV }}:${{ env.GITHUB_ENV }}' \
+          --volume '${{ env.GITHUB_OUTPUT }}:${{ env.GITHUB_OUTPUT }}' \
+          --volume '${{ env.GITHUB_WORKSPACE }}:${{ env.GITHUB_WORKSPACE }}' \
+          'ghcr.io/bolvarak/nuget-publish:${{ inputs.runtime }}' \
             publish \
               --configuration '${{ inputs.configuration }}' \
               --github-organization '${{ inputs.github-organization }}' \
