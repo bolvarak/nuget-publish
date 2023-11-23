@@ -183,7 +183,7 @@ public class NuGetPublishService
         {
             // Print the message to the console
             await PrintMessageAndExitAsync(
-                $"Unable to check for updates to {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}.",
+                $"Unable to check for updates to {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()} ({response.StatusCode}).",
                 LogLevel.Critical, stoppingToken);
 
             // Exit the application
