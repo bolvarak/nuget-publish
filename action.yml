@@ -158,16 +158,16 @@ runs:
         docker run \
           --env-file '${{ env.GITHUB_ENV }}' \
           --env 'GITHUB_ACTOR=${{ github.actor }}' \
-          --env 'GITHUB_ENV=${{ env.GITHUB_ENV }}' \
-          --env 'GITHUB_OUTPUT=${{ env.GITHUB_OUTPUT }}' \
+          --env 'GITHUB_ENV=${{ github.env }}' \
+          --env 'GITHUB_OUTPUT=${{ github.output }}' \
           --env 'GITHUB_TRIGGERING_ACTOR=${{ github.triggering_actor }}' \
           --env 'GITHUB_WORKSPACE=${{ github.workspace }}' \
           --interactive \
           --network 'host' \
           --rm \
-          --volume '${{ env.GITHUB_ENV }}:${{ env.GITHUB_ENV }}' \
-          --volume '${{ env.GITHUB_OUTPUT }}:${{ env.GITHUB_OUTPUT }}' \
-          --volume '${{ env.GITHUB_WORKSPACE }}:${{ env.GITHUB_WORKSPACE }}' \
+          --volume '${{ github.env }}:${{ github.env }}' \
+          --volume '${{ github.output }}:${{ github.output }}' \
+          --volume '${{ github.workspace }}:${{ github.workspace }}' \
           'ghcr.io/bolvarak/nuget-publish:${{ inputs.runtime }}' \
             publish \
               --configuration '${{ inputs.configuration }}' \
