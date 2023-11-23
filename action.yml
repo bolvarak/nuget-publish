@@ -156,7 +156,7 @@ runs:
       shell: 'bash'
       run: |
         docker run \
-          --env-file '${{ env.GITHUB_ENV }}' \
+          --env-file '${{ github.env }}' \
           --env 'GITHUB_ACTOR=${{ github.actor }}' \
           --env 'GITHUB_ENV=${{ github.env }}' \
           --env 'GITHUB_OUTPUT=${{ github.output }}' \
