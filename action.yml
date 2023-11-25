@@ -153,9 +153,6 @@ runs:
     ## Build & Publish
     - name: 'Build & Publish NuGet Package'
       id: 'build-and-publish'
-      env:
-        NUGET_USERNAME: ${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}
-        NUGET_PASSWORD: ${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}
       shell: 'bash'
       run: |
         docker run \
@@ -175,8 +172,8 @@ runs:
               --github-organization '${{ inputs.github-organization }}' \
               --nuget-api-key '${{ inputs.nuget-api-key }}' \
               --nuget-auth-for-build '${{ inputs.nuget-auth-for-build }}' \
-              --nuget-password "${NUGET_PASSWORD}" \
-              --nuget-username "${NUGET_USERNAME}" \
+              --nuget-password '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}' \
+              --nuget-username '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}' \
               --nuspec-file '${{ inputs.nuspec-file }}' \
               --output '${{ inputs.output }}' \
               --package-name '${{ inputs.package-name }}' \
