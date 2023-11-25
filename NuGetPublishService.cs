@@ -541,20 +541,13 @@ public class NuGetPublishService
     private void GetNuGetPassword()
     {
         // Localize the password preferring the options over the environment
-        if (string.IsNullOrEmpty(_options.NugetPassword) || string.IsNullOrWhiteSpace(_options.NugetPassword))
-        {
-            // Take the GITHUB_TOKEN from the environment variables if it exists and the NuGet API Key was not provided
-            if (string.IsNullOrEmpty(_options.NugetApiKey) || string.IsNullOrWhiteSpace(_options.NugetApiKey))
-                _options.NugetPassword = Environment.GetEnvironmentVariable("GITHUB_TOKEN")?.Trim();
+        if ((string.IsNullOrEmpty(_options.NugetPassword) || string.IsNullOrWhiteSpace(_options.NugetPassword)) &&
+            (!string.IsNullOrEmpty(_options.NugetApiKey) && !string.IsNullOrWhiteSpace(_options.NugetApiKey)))
+            _options.NugetPassword = _options.NugetApiKey?.Trim();
 
-            // Take the NuGet API Key if it was provided
-            else if (!string.IsNullOrEmpty(_options.NugetApiKey) && !string.IsNullOrWhiteSpace(_options.NugetApiKey))
-                _options.NugetPassword = _options.NugetApiKey?.Trim();
-
-            // Default the password to null
-            else
-                _options.NugetPassword = null;
-        }
+        // Default the password to null
+        else
+            _options.NugetPassword = null;
 
         // Trim the NuGet password
         if (_options.NugetPassword is not null) _options.NugetPassword = _options.NugetPassword.Trim();
@@ -567,18 +560,7 @@ public class NuGetPublishService
     {
         // Localize the username preferring the options over the environment
         if (string.IsNullOrEmpty(_options.NugetUsername) || string.IsNullOrWhiteSpace(_options.NugetUsername))
-        {
-            // Reset the NuGet username to the GITHUB_ACTOR environment variable if it exists
-            _options.NugetUsername = Environment.GetEnvironmentVariable("GITHUB_ACTOR")?.Trim();
-
-            // Check the NuGet username then reset it to the GITHUB_TRIGGERING_ACTOR environment variable if it exists
-            if (string.IsNullOrEmpty(_options.NugetUsername) || string.IsNullOrWhiteSpace(_options.NugetUsername))
-                _options.NugetUsername = Environment.GetEnvironmentVariable("GITHUB_TRIGGERING_ACTOR")?.Trim();
-
-            // Check the NuGet username then reset it null
-            if (string.IsNullOrEmpty(_options.NugetUsername) || string.IsNullOrWhiteSpace(_options.NugetUsername))
-                _options.NugetUsername = null;
-        }
+            _options.NugetUsername = null;
 
         // Trim the NuGet username
         if (_options.NugetUsername is not null) _options.NugetUsername = _options.NugetUsername.Trim();
@@ -674,15 +656,8 @@ public class NuGetPublishService
     /// <param name="stoppingToken">The cancellation token to use.</param>
     private Task GetWorkingDirectoryAsync(CancellationToken stoppingToken = default)
     {
-        // Check for a GitHub container environment then reset the project path
-        if ((string.IsNullOrEmpty(_options.WorkingDirectory) || string.IsNullOrWhiteSpace(_options.WorkingDirectory)) &&
-            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")) &&
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")))
-            _options.WorkingDirectory = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")!.Trim();
-
-        // Otherwise, grab the directory from the project path
-        else if (string.IsNullOrEmpty(_options.WorkingDirectory) ||
-                 string.IsNullOrWhiteSpace(_options.WorkingDirectory))
+        // Grab the directory from the project path if one wasn't provided
+        if (string.IsNullOrEmpty(_options.WorkingDirectory) || string.IsNullOrWhiteSpace(_options.WorkingDirectory))
             _options.WorkingDirectory = Path.GetDirectoryName(_options.Project);
 
         // Otherwise trim the working directory
@@ -918,6 +893,9 @@ public class NuGetPublishService
     /// <param name="stoppingToken"></param>
     public async Task ExecuteAsync(CancellationToken stoppingToken = default)
     {
+        // Validate the input model
+        _options.Validate();
+
         // Determine the working directory we should use
         await GetWorkingDirectoryAsync(stoppingToken);
 

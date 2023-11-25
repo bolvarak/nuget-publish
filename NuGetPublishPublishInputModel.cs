@@ -132,4 +132,22 @@ public class NuGetPublishPublishInputModel : NuGetPublishGenerateConfigurationIn
     /// <param name="packageName">The name of the package.</param>
     /// <returns>The absolute NuGet Package Index URL.</returns>
     public string GetNuGetPackageIndexUrl(string packageName = null) => $"{GetNuGetServer()}/{GetNuGetPackageIndex(packageName)}";
+
+    /// <summary>
+    ///     This method validates the input model.
+    /// </summary>
+    /// <exception cref="ArgumentException">Thrown when the input model is invalid.</exception>
+    public void Validate()
+    {
+        // Check the authentication for build flag then ensure the username is set
+        if (NugetAuthForBuild && (string.IsNullOrEmpty(NugetUsername) || string.IsNullOrWhiteSpace(NugetUsername)))
+            throw new ArgumentException(
+                "The NuGet username must be specified when the NuGet authentication for build flag is set.");
+
+        // Check the authentication for build flag then ensure the password is set
+        if (NugetAuthForBuild && ((string.IsNullOrEmpty(NugetPassword) || string.IsNullOrWhiteSpace(NugetPassword)) &&
+                                  (string.IsNullOrEmpty(NugetApiKey) || string.IsNullOrWhiteSpace(NugetApiKey))))
+            throw new ArgumentException(
+                "The NuGet password must be specified when the NuGet authentication for build flag is set.");
+    }
 }
