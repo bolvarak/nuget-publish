@@ -59,6 +59,13 @@ public class NuGetPublishPublishInputModel : NuGetPublishGenerateConfigurationIn
     public NuGetPublishOutputEnum Output { get; set; } = NuGetPublishOutputEnum.Plain;
 
     /// <summary>
+    ///     This property contains the output file to write output variables to.  This is really only used for GitHub Actions.
+    /// </summary>
+    [Option("output-file", Required = false, Default = null,
+        HelpText = "The output file to write output variables to.  This is really only used for GitHub Actions.")]
+    public string OutputFile { get; set; }
+
+    /// <summary>
     ///     This property contains the name of the package to generate,
     ///     that will be published to the NuGet server.
     /// </summary>

@@ -548,9 +548,6 @@ public class NuGetPublishService
         // Default the password to null
         else
             _options.NugetPassword = null;
-
-        // Trim the NuGet password
-        if (_options.NugetPassword is not null) _options.NugetPassword = _options.NugetPassword.Trim();
     }
 
     /// <summary>
@@ -563,7 +560,8 @@ public class NuGetPublishService
             _options.NugetUsername = null;
 
         // Trim the NuGet username
-        if (_options.NugetUsername is not null) _options.NugetUsername = _options.NugetUsername.Trim();
+        if (!string.IsNullOrEmpty(_options.NugetUsername) && !string.IsNullOrWhiteSpace(_options.NugetUsername))
+            _options.NugetUsername = _options.NugetUsername.Trim();
     }
 
     /// <summary>
@@ -883,7 +881,7 @@ public class NuGetPublishService
         PrintMessage("Writing outputs...");
 
         // Write the outputs to the console
-        return _outputs.WriteAsync(_options.Output, stoppingToken);
+        return _outputs.WriteAsync(_options.Output, _options.OutputFile, stoppingToken);
     }
 
     /// <summary>

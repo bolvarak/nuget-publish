@@ -129,16 +129,15 @@ public class NuGetPublishOutputModel
     public string Version { get; set; }
 
     /// <summary>
-    ///     This method writes the output to GitHub.
+    ///     This method writes the output to the <paramref name="outputFile" /> as Bash-style variables.
     /// </summary>
+    /// <param name="outputFile">The output file to write to.</param>
     /// <param name="stoppingToken">The token to monitor for cancellation requests.</param>
-    private Task WriteToGitHubAsync(CancellationToken stoppingToken = default)
+    private Task WriteToOutputFileAsync(string outputFile, CancellationToken stoppingToken = default)
     {
-        // Localize GitHub's output file path
-        string githubOutputFilePath = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
-
         // Ensure we have a path to write to
-        if (githubOutputFilePath?.Trim() is null or "" || !File.Exists(githubOutputFilePath)) return Task.CompletedTask;
+        if (string.IsNullOrEmpty(outputFile) || string.IsNullOrWhiteSpace(outputFile) || !File.Exists(outputFile))
+            return Task.CompletedTask;
 
         // Define our lines to write
         List<string> lines = new();
@@ -168,18 +167,20 @@ public class NuGetPublishOutputModel
         }
 
         // Write the lines to the file
-        return File.WriteAllLinesAsync(githubOutputFilePath, lines, stoppingToken);
+        return File.AppendAllLinesAsync(outputFile, lines, stoppingToken);
     }
 
     /// <summary>
     ///     This method writes the output to the console.
     /// </summary>
     /// <param name="outputFormat">The output format to use.</param>
+    /// <param name="outputFile">The output file to write to.</param>
     /// <param name="stoppingToken">The token to monitor for cancellation requests.</param>
-    public async Task WriteAsync(NuGetPublishOutputEnum outputFormat, CancellationToken stoppingToken = default)
+    public async Task WriteAsync(NuGetPublishOutputEnum outputFormat, string outputFile = null,
+        CancellationToken stoppingToken = default)
     {
         // Write to GitHub
-        await WriteToGitHubAsync(stoppingToken);
+        if (outputFile is not null) await WriteToOutputFileAsync(outputFile, stoppingToken);
 
         // Check the output format
         if (outputFormat is NuGetPublishOutputEnum.Silent) return;
