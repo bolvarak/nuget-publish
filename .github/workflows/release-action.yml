@@ -59,7 +59,7 @@ jobs:
         uses: 'actions/upload-artifact@v3'
         with:
           name: '${{ matrix.target.final }}'
-          path: 'publish-${{ matrix.target.runtime }}/${{ matrix.target.binary }}'
+          path: 'publish-${{ matrix.target.runtime }}/${{ matrix.target.final }}'
           retention-days: 1
 
   release:
