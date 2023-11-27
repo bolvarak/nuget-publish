@@ -29,11 +29,6 @@ public class NuGetPublishService
                                           """;
 
     /// <summary>
-    ///     This property contains the <see cref="HttpClient" /> to use for HTTP requests.
-    /// </summary>
-    private static readonly HttpClient HttpClient = new();
-
-    /// <summary>
     ///     This method instantiates a new <see cref="NuGetPublishService" /> instance.
     /// </summary>
     /// <param name="options">The service options from the CLI.</param>
@@ -132,8 +127,11 @@ public class NuGetPublishService
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
                 Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.NugetUsername}:{_options.NugetPassword}")));
 
+        // Localize our HTTP client
+        using HttpClient httpClient = new HttpClient();
+
         // Send the request
-        HttpResponseMessage response = await HttpClient.SendAsync(request, stoppingToken);
+        HttpResponseMessage response = await httpClient.SendAsync(request, stoppingToken);
 
         // Check for 401 unauthorized without authorization
         if (response.StatusCode is HttpStatusCode.Unauthorized && !authorize)
