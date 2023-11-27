@@ -1,0 +1,59 @@
+name: 'Binary Build & Release'
+on:
+  workflow_run:
+    branches:
+      - 'main'
+    types:
+      - 'completed'
+    workflows:
+      - 'Binary Sync'
+
+jobs:
+  build-and-release:
+    name: 'Binary Build & Release'
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      packages: 'write'
+    strategy:
+      matrix:
+        target: [
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.arm32', name: 'Linux arm32', runtime: 'linux-arm' },
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.arm64', name: 'Linux arm64', runtime: 'linux-arm64' },
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.alpine.arm64', name: 'Alpine Linux arm64', runtime: 'linux-musl-arm64' },
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.alpine.amd64', name: 'Alpine Linux amd64', runtime: 'linux-musl-x64' },
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.amd64', name: 'Linux amd64', runtime: 'linux-x64' },
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.macos.arm64', name: 'macOS arm64', runtime: 'osx-arm64' },
+          { binary: 'NuGet.Publish', final: 'NuGet.Publish.macos.amd64', name: 'macOS amd64', runtime: 'osx-x64' },
+          { binary: 'NuGet.Publish.exe', final: 'NuGet.Publish.arm64.exe', name: 'Windows arm64', runtime: 'win-arm64' },
+          { binary: 'NuGet.Publish.exe', final: 'NuGet.Publish.amd64.exe', name: 'Windows amd64', runtime: 'win-x64' },
+          { binary: 'NuGet.Publish.exe', final: 'NuGet.Publish.i386.exe', name: 'Windows i386', runtime: 'win-x86' }
+        ]
+    steps:
+
+      ## Checkout the repository
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
+      
+      ## Setup .NET
+      - name: 'Setup .NET'
+        uses: 'actions/setup-dotnet@v3'
+        with:
+          dotnet-version: '3.1.x'
+
+      ## Build Target
+      - name: 'Build Target ${{ matrix.target.name }}'
+        run: |
+          dotnet publish 'NuGet.Publish.csproj' \
+            --configuration 'Release' \
+            --force \
+            --nologo \
+            --output 'publish-${{ matrix.target.runtime }}' \
+            --runtime '${{ matrix.target.runtime }}' \
+            --self-contained true \
+            --verbosity 'minimal';
+
+      ## Publish Target
+      - name: 'Publish Target ${{ matrix.target.name }}'
+        run: |
+          mkdir -p 'publish-final' && mv 'publish-${{ matrix.target.runtime }}/${{ matrix.target.binary }}' 'publish-final/${{ matrix.target.final }}';
