@@ -138,7 +138,16 @@ public class NuGetPublishPublishInputModel : NuGetPublishGenerateConfigurationIn
     /// </summary>
     /// <param name="packageName">The name of the package.</param>
     /// <returns>The absolute NuGet Package Index URL.</returns>
-    public string GetNuGetPackageIndexUrl(string packageName = null) => $"{GetNuGetServer()}/{GetNuGetPackageIndex(packageName)}";
+    public string GetNuGetPackageIndexUrl(string packageName = null) =>
+        $"{GetNuGetServer()}/{GetNuGetPackageIndex(packageName)}";
+
+    /// <summary>
+    ///     This method returns the NuGet Package Version URL.
+    /// </summary>
+    /// <param name="packageName">The name of the package.</param>
+    /// <returns>The absolute NuGet Package Version URL.</returns>
+    public string GetNuGetPackageVersionUrl(string packageName = null) =>
+        $"{GetNuGetServer()}/{(packageName ?? PackageName).Trim()}/{Version.Trim()}.json";
 
     /// <summary>
     ///     This method validates the input model.

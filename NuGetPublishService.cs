@@ -116,11 +116,11 @@ public class NuGetPublishService
     {
         // Sent the message notifying the package name and version
         PrintMessage(authorize
-            ? $"Authorizing check update request for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}..."
+            ? $"Authorizing check update request for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageVersionUrl()}..."
             : $"Checking for updates to {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}...");
 
         // Define our request
-        HttpRequestMessage request = new(HttpMethod.Get, _options.GetNuGetPackageIndexUrl());
+        HttpRequestMessage request = new(HttpMethod.Get, _options.GetNuGetPackageVersionUrl());
 
         // Check for a GitHub NuGet server then add the authorization header to the request
         if (authorize)
@@ -158,22 +158,14 @@ public class NuGetPublishService
         // Check for a 200 OK
         if (response.StatusCode is HttpStatusCode.OK)
         {
-            // Deserialize the JSON response
-            NuGetPublishIndexModel document = await JsonSerializer.DeserializeAsync<NuGetPublishIndexModel>(
-                await response.Content.ReadAsStreamAsync(stoppingToken), null as JsonSerializerOptions, stoppingToken);
 
-            // Check the document for the version we're trying to publish
-            if (document.Versions.Any(v => v == _options.Version))
-            {
+            // Print the message to the console
+            await PrintMessageAndExitAsync(
+                $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}.",
+                LogLevel.Error, stoppingToken);
 
-                // Print the message to the console
-                await PrintMessageAndExitAsync(
-                    $"Existing package found for {_options.PackageName} {_outputs.Version} at {_options.GetNuGetPackageIndexUrl()}.",
-                    LogLevel.Error, stoppingToken);
-
-                // Exit the application
-                return;
-            }
+            // Exit the application
+            return;
         }
 
         // Check the response status code
