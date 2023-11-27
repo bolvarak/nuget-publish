@@ -542,12 +542,15 @@ public class NuGetPublishService
     {
         // Localize the password preferring the options over the environment
         if ((string.IsNullOrEmpty(_options.NugetPassword) || string.IsNullOrWhiteSpace(_options.NugetPassword)) &&
-            (!string.IsNullOrEmpty(_options.NugetApiKey) && !string.IsNullOrWhiteSpace(_options.NugetApiKey)))
-            _options.NugetPassword = _options.NugetApiKey?.Trim();
-
-        // Default the password to null
-        else
+            (string.IsNullOrEmpty(_options.NugetApiKey) || string.IsNullOrWhiteSpace(_options.NugetApiKey)))
             _options.NugetPassword = null;
+
+        // Check for a provided password then set it
+        else if (!string.IsNullOrEmpty(_options.NugetPassword) && !string.IsNullOrWhiteSpace(_options.NugetPassword))
+            _options.NugetPassword = _options.NugetPassword.Trim();
+
+        // Otherwise default the password to the NuGet API key
+        else _options.NugetPassword = _options.NugetApiKey.Trim();
     }
 
     /// <summary>
