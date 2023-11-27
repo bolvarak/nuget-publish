@@ -39,8 +39,14 @@ The platform to use when building the project or solution.  (values: `AnyCpu|Arm
 ## `project`
 **Required** The path, relative to the root of the repository, to the project or solution file to be packaged.
 
+## `runner-arch`
+The architecture the runner is using.  (values: `arm64|x64`, default: `x64`)
+
+## `runner-os`
+The operating system the runner is using.  (values: `alpine|linux|macos|windows`, default: `linux`)
+
 ## `runtime`
-The runtime to use when building the project or solution.  (values: `net8.x|net7.x|net6.x`, default: `net8.x`)
+The runtime to use when building the project or solution.  (values: `8.x|7.x|6.x`, default: `8.x`)
 
 ## `scan-for-package-name`
 A flag that denotes whether to scan the project or solution file in an attempt to find the package name preferring `PackageId` over `AssemblyName` over `project`.  (default: `false`)'
@@ -100,11 +106,11 @@ The version of the generated package that was published to the NuGet Server.
 ### Runtimes
 This action supports multiple different .NET runtimes.  The table below shows the supported runtimes and their corresponding `runtime` values.
 
-| Runtime | Value    |
-|---------|----------|
-| 8.0     | `net8.x` |
-| 7.0     | `net7.x` |
-| 6.0     | `net6.x` |
+| Runtime | Value |
+|---------|-------|
+| 8.0     | `8.x` |
+| 7.0     | `7.x` |
+| 6.0     | `6.x` |
 
 ### Basic Usage
 
@@ -112,8 +118,10 @@ This action supports multiple different .NET runtimes.  The table below shows th
 - uses: 'bolvarak/nuget-publish@main'
   with:
     nuget-api-key: ${{ secrets.NUGET_API_KEY | secrets.GITHUB_TOKEN }}
+    runner-arch: 'x64'
+    runner-os: 'linux'
     project: 'src/MyProject/MyProject.csproj'
-    runtime: 'net8.x'
+    runtime: '8.x'
 ```
 
 <!--

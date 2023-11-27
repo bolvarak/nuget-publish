@@ -67,9 +67,19 @@ inputs:
     description: 'The path, relative to the root of the repository, to the project or solution file to be packaged.'
     required: true
 
+  runner-arch:
+    default: 'x64'
+    description: 'The architecture to use when building the project or solution.  (values: arm64|x64, default: x64)'
+    required: false
+
+  runner-os:
+    default: 'linux'
+    description: 'The operating system to use when building the project or solution.  (values: alpine|linux|macos|windows, default: linux)'
+    required: false
+
   runtime:
-    default: 'net8.x'
-    description: 'The runtime to use when building the project or solution.  (values: net8.x|net7.x|net6.x, default: net8.x)'
+    default: '8.x'
+    description: 'The runtime to use when building the project or solution.  (values: 8.x|7.x|6.x, default: 8.x)'
     required: false
 
   scan-for-package-name:
@@ -86,107 +96,85 @@ inputs:
     description: 'The static version for the NuGet package.'
     required: false
 
-## Define the outputs from this action
-outputs:
-
-  NUGET_CONFIG:
-    description: 'The generated NuGet.Config file if the nuget-auth-for-build flag is set to true.'
-    value: '${{ steps.build-and-publish.NUGET_CONFIG }}'
-
-  PACKAGE_NAME:
-    description: 'The name of the generated package that was published to the NuGet Server.'
-    value: '${{ steps.build-and-publish.PACKAGE_NAME }}'
-
-  PACKAGE_PATH:
-    description: 'The path to the generated package that was published to the NuGet Server.'
-    value: '${{ steps.build-and-publish.PACKAGE_PATH }}'
-
-  PROCESS_BUILD_ERROR:
-    description: 'The standard error from the process responsible for building the project.'
-    value: '${{ steps.build-and-publish.PROCESS_BUILD_ERROR }}'
-
-  PROCESS_BUILD_OUTPUT:
-    description: 'The standard output from the process responsible for building the project.'
-    value: '${{ steps.build-and-publish.PROCESS_BUILD_OUTPUT }}'
-
-  PROCESS_CLEAN_ERROR:
-    description: 'The standard error from the process responsible for cleaning the project.'
-    value: '${{ steps.build-and-publish.PROCESS_CLEAN_ERROR }}'
-
-  PROCESS_CLEAN_OUTPUT:
-    description: 'The standard output from the process responsible for cleaning the project.'
-    value: '${{ steps.build-and-publish.PROCESS_CLEAN_OUTPUT }}'
-
-  PROCESS_NUGET_PUSH_ERROR:
-    description: 'The standard error from the process responsible for pushing the package to the NuGet Server.'
-    value: '${{ steps.build-and-publish.PROCESS_NUGET_PUSH_ERROR }}'
-
-  PROCESS_NUGET_PUSH_OUTPUT:
-    description: 'The standard output from the process responsible for pushing the package to the NuGet Server.'
-    value: '${{ steps.build-and-publish.PROCESS_NUGET_PUSH_OUTPUT }}'
-
-  PROCESS_PACK_ERROR:
-    description: 'The standard error from the process responsible for packing the project.'
-    value: '${{ steps.build-and-publish.PROCESS_PACK_ERROR }}'
-
-  PROCESS_PACK_OUTPUT:
-    description: 'The standard output from the process responsible for packing the project.'
-    value: '${{ steps.build-and-publish.PROCESS_PACK_OUTPUT }}'
-
-  PROCESS_RESTORE_ERROR:
-    description: 'The standard error from the process responsible for restoring the project.'
-    value: '${{ steps.build-and-publish.PROCESS_RESTORE_ERROR }}'
-
-  PROCESS_RESTORE_OUTPUT:
-    description: 'The standard output from the process responsible for restoring the project.'
-    value: '${{ steps.build-and-publish.PROCESS_RESTORE_OUTPUT }}'
-
-  VERSION:
-    description: 'The version of the generated package that was published to the NuGet Server.'
-    value: '${{ steps.build-and-publish.VERSION }}'
-
 ## Define the runtime of this action
 runs:
   using: 'composite'
   steps:
 
-    ## We'll need Docker
-    - name: 'Setup Docker'
-      uses: 'docker/setup-qemu-action@v3'
-
-    ## Build & Publish
-    - name: 'Build & Publish NuGet Package'
-      id: 'build-and-publish'
+    ## We'll need a temporary directory
+    - name: 'Download Directory'
       shell: 'bash'
       run: |
-        docker run \
-          --dns '1.1.1.1' \
-          --dns '1.0.0.1' \
-          --dns '2606:4700:4700::1111' \
-          --dns '2606:4700:4700::1001' \
-          --env-file '${{ github.env }}' \
-          --env 'GITHUB_ENV=${{ github.env }}' \
-          --env 'GITHUB_OUTPUT=${{ github.output }}' \
-          --interactive \
-          --rm \
-          --volume '${{ github.env }}:${{ github.env }}' \
-          --volume '${{ github.output }}:${{ github.output }}' \
-          --volume '${{ github.workspace }}:${{ github.workspace }}' \
-          'ghcr.io/bolvarak/nuget-publish:${{ inputs.runtime }}' \
-            publish \
-              --configuration '${{ inputs.configuration }}' \
-              --github-organization '${{ inputs.github-organization }}' \
-              --nuget-api-key '${{ inputs.nuget-api-key }}' \
-              --nuget-auth-for-build '${{ inputs.nuget-auth-for-build }}' \
-              --nuget-password '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}' \
-              --nuget-username '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}' \
-              --nuspec-file '${{ inputs.nuspec-file }}' \
-              --output '${{ inputs.output }}' \
-              --output-file '${{ inputs.output-file == '' && github.output || inputs.output-file }}' \
-              --package-name '${{ inputs.package-name }}' \
-              --platform '${{ inputs.platform }}' \
-              --project '${{ inputs.project }}' \
-              --scan-for-package-name '${{ inputs.scan-for-package-name }}' \
-              --verbosity '${{ inputs.verbosity }}' \
-              --version '${{ inputs.version }}' \
-              --working-directory '${{ github.workspace }}';
+        echo "NUGET_PUBLISH_TEMP_DIR=$(mktemp -d)" >> "${GITHUB_ENV}";
+
+    ## We'll need our binary (Alpine Linux)
+    - name: 'Download NuGet.Publish (Alpine Linux)'
+      if: inputs.runner-os == 'alpine'
+      shell: 'bash'
+      run: |
+        curl -L -o '${{ env.NUGET_PUBLISH_TEMP_DIR }}/NuGet.Publish' \
+          'https://github.com/bolvarak/nuget-publish/releases/latest/download/NuGet.Publish.alpine.${{ inputs.runner-arch }}';
+
+    ## We'll need our binary (Linux)
+    - name: 'Download NuGet.Publish (Linux)'
+      if: inputs.runner-os == 'linux'
+      shell: 'bash'
+      run: |
+        curl -L -o '${{ env.NUGET_PUBLISH_TEMP_DIR }}/NuGet.Publish' \
+          'https://github.com/bolvarak/nuget-publish/releases/latest/download/NuGet.Publish.${{ inputs.runner-arch }}';
+
+    ## We'll need our binary (macOS)
+    - name: 'Download NuGet.Publish (macOS)'
+      if: inputs.runner-os == 'macos'
+      shell: 'bash'
+      run: |
+        curl -L -o '${{ env.NUGET_PUBLISH_TEMP_DIR }}/NuGet.Publish' \
+          'https://github.com/bolvarak/nuget-publish/releases/latest/download/NuGet.Publish.macos.${{ inputs.runner-arch }}';
+
+    ## We'll need our binary (Windows)
+    - name: 'Download NuGet.Publish (Windows)'
+      if: inputs.runner-os == 'windows'
+      shell: 'bash'
+      run: |
+        curl -L -o '${{ env.NUGET_PUBLISH_TEMP_DIR }}/NuGet.Publish' \
+          'https://github.com/bolvarak/nuget-publish/releases/latest/download/NuGet.Publish.${{ inputs.runner-arch }}.exe';
+
+    ## We'll need to make our binary executable
+    - name: 'NuGet.Publish Permissions'
+      shell: 'bash'
+      run: |
+        chmod +x '${{ env.NUGET_PUBLISH_TEMP_DIR }}/NuGet.Publish';
+
+    ## Setup .NET
+    - name: 'Setup .NET (${{ inputs.runtime }})'
+      uses: 'actions/setup-dotnet@v3'
+      with:
+        dotnet-version: '${{ inputs.runtime }}'
+
+    ## Execute our binary
+    - name: 'NuGet.Publish'
+      shell: 'bash'
+      run: |
+        ${{ env.NUGET_PUBLISH_TEMP_DIR }}/NuGet.Publish publish \
+          --configuration '${{ inputs.configuration }}' \
+          --github-organization '${{ inputs.github-organization }}' \
+          --nuget-api-key '${{ inputs.nuget-api-key }}' \
+          --nuget-auth-for-build '${{ inputs.nuget-auth-for-build }}' \
+          --nuget-password '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}' \
+          --nuget-username '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}' \
+          --nuspec-file '${{ inputs.nuspec-file }}' \
+          --output '${{ inputs.output }}' \
+          --output-file '${{ inputs.output-file == '' && github.output || inputs.output-file }}' \
+          --package-name '${{ inputs.package-name }}' \
+          --platform '${{ inputs.platform }}' \
+          --project '${{ inputs.project }}' \
+          --scan-for-package-name '${{ inputs.scan-for-package-name }}' \
+          --verbosity '${{ inputs.verbosity }}' \
+          --version '${{ inputs.version }}' \
+          --working-directory '${{ github.workspace }}';
+
+    ## We'll need to cleanup our temporary directory
+    - name: 'Cleanup'
+      shell: 'bash'
+      run: |
+        rm -rf "${{ env.NUGET_PUBLISH_TEMP_DIR }}";
