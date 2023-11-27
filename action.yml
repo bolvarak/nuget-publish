@@ -68,8 +68,8 @@ inputs:
     required: true
 
   runner-arch:
-    default: 'x64'
-    description: 'The architecture to use when building the project or solution.  (values: arm64|x64, default: x64)'
+    default: 'amd64'
+    description: 'The architecture to use when building the project or solution.  (values: amd64|arm64, default: amd64)'
     required: false
 
   runner-os:
