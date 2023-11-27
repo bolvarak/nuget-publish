@@ -160,11 +160,14 @@ runs:
       shell: 'bash'
       run: |
         docker run \
+          --dns '1.1.1.1' \
+          --dns '1.0.0.1' \
+          --dns '2606:4700:4700::1111' \
+          --dns '2606:4700:4700::1001' \
           --env-file '${{ github.env }}' \
           --env 'GITHUB_ENV=${{ github.env }}' \
           --env 'GITHUB_OUTPUT=${{ github.output }}' \
           --interactive \
-          --network 'host' \
           --rm \
           --volume '${{ github.env }}:${{ github.env }}' \
           --volume '${{ github.output }}:${{ github.output }}' \
