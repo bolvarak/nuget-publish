@@ -81,7 +81,7 @@ jobs:
       - name: 'Prepare Artifacts'
         run: |
           find '${{ github.workspace }}/download' -mindepth 2 -type f \
-            -exec mv -t '${{ github.workspace }}/final' -i '{}' +
+            -exec mv --force --target-directory='${{ github.workspace }}/final' '{}' +
 
       ## We'll need to checkout our repository
       - name: 'Repository Checkout'
