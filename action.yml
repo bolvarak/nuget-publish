@@ -164,7 +164,6 @@ runs:
           --env 'GITHUB_ENV=${{ github.env }}' \
           --env 'GITHUB_OUTPUT=${{ github.output }}' \
           --interactive \
-          --network 'host' \
           --rm \
           --volume '${{ github.env }}:${{ github.env }}' \
           --volume '${{ github.output }}:${{ github.output }}' \
