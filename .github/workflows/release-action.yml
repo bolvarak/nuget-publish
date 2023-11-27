@@ -84,5 +84,5 @@ jobs:
       - name: 'Release Action'
         uses: 'ncipollo/release-action@v1.13.0'
         with:
-          artifacts: '${{ github.workspace }}/download/*'
+          artifacts: '${{ github.workspace }}/download/NuGet.Publish.*'
           bodyFile: 'release-body.md'
