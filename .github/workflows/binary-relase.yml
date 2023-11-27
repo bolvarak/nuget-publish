@@ -6,11 +6,8 @@ on:
 
 jobs:
   build-and-release:
-    name: 'Binary Build & Release'
+    name: 'Binary Build'
     runs-on: 'ubuntu-latest'
-    permissions:
-      contents: 'read'
-      packages: 'write'
     strategy:
       matrix:
         target: [
@@ -49,7 +46,34 @@ jobs:
             --self-contained true \
             --verbosity 'minimal';
 
-      ## Publish Target
-      - name: 'Publish Target ${{ matrix.target.name }}'
-        run: |
-          mkdir -p 'publish-final' && mv 'publish-${{ matrix.target.runtime }}/${{ matrix.target.binary }}' 'publish-final/${{ matrix.target.final }}';
+      ## Upload Target Artifact
+      - name: 'Upload Target Artifact ${{ matrix.target.name }}'
+        uses: 'actions/upload-artifact@v3'
+        with:
+          name: '${{ matrix.target.final }}'
+          path: 'publish-${{ matrix.target.runtime }}/${{ matrix.target.binary }}'
+
+  publish-artifacts:
+    name: 'Binary Release'
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      packages: 'write'
+    needs: 'build-and-release'
+    steps:
+
+      ## Download the artifacts
+      - name: 'Download Artifacts'
+        uses: 'actions/download-artifact@v3'
+        with:
+          name: 'NuGet.Publish.*'
+          download-path: 'publish-final'
+
+      ## Publish Artifact
+      - name: 'Publish Artifact'
+        uses: 'skx/github-action-publish-binaries@master'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        with:
+          args: 'publish-final/*'
+          releaseId: 'v1'
