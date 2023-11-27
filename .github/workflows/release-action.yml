@@ -59,6 +59,7 @@ jobs:
 
   release:
     name: 'Release Action'
+    needs: 'build-and-upload'
     runs-on: 'ubuntu-latest'
     permissions:
       contents: 'write'
