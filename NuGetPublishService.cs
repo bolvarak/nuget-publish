@@ -130,12 +130,18 @@ public class NuGetPublishService
         // Localize our HTTP client
         using HttpClient httpClient = new HttpClient();
 
+        // Add the user agent header to the request
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "bolvarak/nuget-publish");
+
         // Send the request
         HttpResponseMessage response = await httpClient.SendAsync(request, stoppingToken);
 
         // Check for 401 unauthorized without authorization
         if (response.StatusCode is HttpStatusCode.Unauthorized && !authorize)
         {
+            // Wait for 3 seconds
+            await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
+
             // Execute this method again with authorization enabled
             await CheckForUpdateAsync(stoppingToken, true);
 
