@@ -73,13 +73,19 @@ jobs:
       ## Ensure our Directory Structure exists
       - name: 'Directory Structure'
         run: |
-          mkdir -p '${{ github.workspace }}/download';
+          mkdir -p '${{ github.workspace }}/final';
 
       ## Download the artifacts
       - name: 'Download Artifacts'
         uses: 'actions/download-artifact@v3'
         with:
-          path: '${{ github.workspace }}/download'
+          path: '${{ github.workspace }}/final'
+
+      ## Flatten Artifacts
+      - name: 'Flatten Artifacts'
+        run: |
+            find '${{ github.workspace }}/final' -mindepth 2 -type f -exec mv {} '..' \;
+            find '.' -type d -empty -delete
           
       ## Show the downloaded artifacts
       - name: 'Show Artifacts'
