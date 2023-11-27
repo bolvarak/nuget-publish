@@ -139,9 +139,6 @@ public class NuGetPublishService
         // Check for 401 unauthorized without authorization
         if (response.StatusCode is HttpStatusCode.Unauthorized && !authorize)
         {
-            // Wait for 3 seconds
-            await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
-
             // Execute this method again with authorization enabled
             await CheckForUpdateAsync(stoppingToken, true);
 
