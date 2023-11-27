@@ -72,13 +72,14 @@ jobs:
       - name: 'Download Artifacts'
         uses: 'actions/download-artifact@v3'
         with:
-          download-path: '${{ github.workspace }}/download'
+          name: 'NuGet.Publish.*'
+          path: '${{ github.workspace }}/download'
           
       ## Prepare the artifacts
-      - name: 'Prepare Artifacts'
-        run: |
-          find '${{ github.workspace }}/download' -mindepth 2 -type f \
-            -exec mv -t '${{ github.workspace }}/publish-final' -i '{}' +
+      #- name: 'Prepare Artifacts'
+      #  run: |
+      #    find '${{ github.workspace }}/download' -mindepth 2 -type f \
+      #      -exec mv -t '${{ github.workspace }}/publish-final' -i '{}' +
 
       ## Publish Artifact
       - name: 'Publish Artifact'
@@ -86,5 +87,5 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          args: 'publish-final/*'
+          args: '${{ github.workspace }}/download/*'
           releaseId: 'v1'
