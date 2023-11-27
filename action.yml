@@ -161,9 +161,8 @@ runs:
       run: |
         docker run \
           --env-file '${{ github.env }}' \
-          --env 'GITHUB_ACTOR=${{ github.actor }}' \
           --env 'GITHUB_ENV=${{ github.env }}' \
-          --env 'GITHUB_WORKSPACE=${{ github.workspace }}' \
+          --env 'GITHUB_OUTPUT=${{ github.output }}' \
           --interactive \
           --network 'host' \
           --rm \
