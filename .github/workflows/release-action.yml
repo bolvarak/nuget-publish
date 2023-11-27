@@ -76,12 +76,6 @@ jobs:
         with:
           path: '${{ github.workspace }}/download'
 
-      ## Prepare the artifacts
-      - name: 'Prepare Artifacts'
-        run: |
-          find '${{ github.workspace }}/download' -type f -exec mv {} '..' \;
-          find '${{ github.workspace }}/download' -type d -empty -delete
-
       ## We'll need to checkout our repository
       - name: 'Repository Checkout'
         uses: 'actions/checkout@v4'
@@ -90,5 +84,5 @@ jobs:
       - name: 'Release Action'
         uses: 'ncipollo/release-action@v1.13.0'
         with:
-          artifacts: '${{ github.workspace }}/final/*'
+          artifacts: '${{ github.workspace }}/download/*'
           bodyFile: 'release-body.md'
