@@ -32,7 +32,7 @@ jobs:
       - name: 'Setup .NET'
         uses: 'actions/setup-dotnet@v3'
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: '8.x'
 
       ## Build Target
       - name: 'Build Target ${{ matrix.target.name }}'
@@ -52,6 +52,7 @@ jobs:
         with:
           name: '${{ matrix.target.final }}'
           path: 'publish-${{ matrix.target.runtime }}/${{ matrix.target.binary }}'
+          retention-days: 1
 
   publish-artifacts:
     name: 'Binary Release'
@@ -65,21 +66,20 @@ jobs:
       ## Ensure our Directory Structure exists
       - name: 'Directory Structure'
         run: |
-          mkdir -p '${{ github.workspace }}/publish-final';
           mkdir -p '${{ github.workspace }}/download';
+          mkdir -p '${{ github.workspace }}/final';
 
       ## Download the artifacts
       - name: 'Download Artifacts'
         uses: 'actions/download-artifact@v3'
         with:
-          name: 'NuGet.Publish.*'
           path: '${{ github.workspace }}/download'
           
       ## Prepare the artifacts
-      #- name: 'Prepare Artifacts'
-      #  run: |
-      #    find '${{ github.workspace }}/download' -mindepth 2 -type f \
-      #      -exec mv -t '${{ github.workspace }}/publish-final' -i '{}' +
+      - name: 'Prepare Artifacts'
+        run: |
+          find '${{ github.workspace }}/download' -mindepth 2 -type f \
+            -exec mv -t '${{ github.workspace }}/final' -i '{}' +
 
       ## Publish Artifact
       - name: 'Publish Artifact'
@@ -87,5 +87,5 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          args: '${{ github.workspace }}/download/*'
+          args: '${{ github.workspace }}/final/*'
           releaseId: 'v1'
