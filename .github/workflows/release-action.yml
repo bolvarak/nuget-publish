@@ -70,10 +70,13 @@ jobs:
       contents: 'write'
     steps:
 
+      ## We'll need to checkout our repository
+      - name: 'Repository Checkout'
+        uses: 'actions/checkout@v4'
+
       ## Ensure our Directory Structure exists
       - name: 'Directory Structure'
-        run: |
-          mkdir -p '${{ github.workspace }}/final';
+        run: mkdir -p '${{ github.workspace }}/final';
 
       ## Download the artifacts
       - name: 'Download Artifacts'
@@ -84,17 +87,12 @@ jobs:
       ## Flatten Artifacts
       - name: 'Flatten Artifacts'
         run: |
-            find '${{ github.workspace }}/final' -mindepth 2 -type f -exec mv {} '..' \;
-            find '.' -type d -empty -delete
+            find '${{ github.workspace }}/final' -mindepth 2 -type f -exec mv {} '${{ github.workspace }}/final' \;
+            find '${{ github.workspace }}/final' -type d -empty -delete
           
       ## Show the downloaded artifacts
       - name: 'Show Artifacts'
-        run: |
-          tree '${{ github.workspace }}/final' || ls -la '${{ github.workspace }}/final';
-
-      ## We'll need to checkout our repository
-      - name: 'Repository Checkout'
-        uses: 'actions/checkout@v4'
+        run: tree '${{ github.workspace }}/final';
 
       ## Release our Action
       - name: 'Release Action'
