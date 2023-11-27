@@ -62,11 +62,23 @@ jobs:
     needs: 'build-and-release'
     steps:
 
+      ## Ensure our Directory Structure exists
+      - name: 'Directory Structure'
+        run: |
+          mkdir -p '${{ github.workspace }}/publish-final';
+          mkdir -p '${{ github.workspace }}/download';
+
       ## Download the artifacts
       - name: 'Download Artifacts'
         uses: 'actions/download-artifact@v3'
         with:
-          download-path: 'publish-final'
+          download-path: '${{ github.workspace }}/download'
+          
+      ## Prepare the artifacts
+      - name: 'Prepare Artifacts'
+        run: |
+          find '${{ github.workspace }}/download' -mindepth 2 -type f \
+            -exec mv -t '${{ github.workspace }}/publish-final' -i '{}' +
 
       ## Publish Artifact
       - name: 'Publish Artifact'
@@ -74,5 +86,5 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          args: 'publish-final/**/*'
+          args: 'publish-final/*'
           releaseId: 'v1'
