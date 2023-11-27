@@ -69,7 +69,6 @@ jobs:
       - name: 'Directory Structure'
         run: |
           mkdir -p '${{ github.workspace }}/download';
-          mkdir -p '${{ github.workspace }}/final';
 
       ## Download the artifacts
       - name: 'Download Artifacts'
@@ -80,8 +79,8 @@ jobs:
       ## Prepare the artifacts
       - name: 'Prepare Artifacts'
         run: |
-          find '${{ github.workspace }}/download' -mindepth 2 -type f \
-            -exec mv --force --target-directory='${{ github.workspace }}/final' '{}' +
+          find '${{ github.workspace }}/download' -type f -exec mv {} '..' \;
+          find '${{ github.workspace }}/download' -type d -empty -delete
 
       ## We'll need to checkout our repository
       - name: 'Repository Checkout'
