@@ -75,6 +75,11 @@ jobs:
         uses: 'actions/download-artifact@v3'
         with:
           path: '${{ github.workspace }}/download'
+          
+      ## Show the downloaded artifacts
+      - name: 'Show Artifacts'
+        run: |
+          tree '${{ github.workspace }}/download' || ls -la '${{ github.workspace }}/download';
 
       ## We'll need to checkout our repository
       - name: 'Repository Checkout'
