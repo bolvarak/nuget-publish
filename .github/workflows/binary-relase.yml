@@ -66,7 +66,6 @@ jobs:
       - name: 'Download Artifacts'
         uses: 'actions/download-artifact@v3'
         with:
-          name: 'NuGet.Publish.*'
           download-path: 'publish-final'
 
       ## Publish Artifact
@@ -75,5 +74,5 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          args: 'publish-final/*'
+          args: 'publish-final/**/*'
           releaseId: 'v1'
