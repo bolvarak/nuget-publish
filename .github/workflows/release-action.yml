@@ -49,6 +49,11 @@ jobs:
             --self-contained true \
             --verbosity 'minimal';
 
+      ## Rename Target Artifact
+      - name: 'Rename Target Artifact: ${{ matrix.target.name }} (${{ matrix.target.binary }}) to ${{ matrix.target.final }}'
+        run: |
+          mv 'publish-${{ matrix.target.runtime }}/${{ matrix.target.binary }}' 'publish-${{ matrix.target.runtime }}/${{ matrix.target.final }}';
+
       ## Upload Target Artifact
       - name: 'Upload Target Artifact: ${{ matrix.target.name }}'
         uses: 'actions/upload-artifact@v3'
