@@ -128,6 +128,10 @@ outputs:
 
 ## Define the runtime of this action
 runs:
+  env:
+    NUGET_PASSWORD: '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}'
+    NUGET_USERNAME: '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}'
+    OUTPUT_FILE: '${{ inputs.output-file == '' && github.output || inputs.output-file }}'
   using: 'docker'
   image: 'ghcr.io/bolvarak/nuget-publish:latest'
   args:
@@ -141,15 +145,15 @@ runs:
     - --nuget-auth-for-build
     - '${{ inputs.nuget-auth-for-build }}'
     - --nuget-password
-    - '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}'
+    - '${{ env.NUGET_PASSWORD }} }}'
     - --nuget-username
-    - '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}'
+    - '${{ env.NUGET_USERNAME }}'
     - --nuspec-file
     - '${{ inputs.nuspec-file }}'
     - --output
     - '${{ inputs.output }}'
     - --output-file
-    - '${{ inputs.output-file == '' && github.output || inputs.output-file }}'
+    - '${{ env.OUTPUT_FILE }}'
     - --package-name
     - '${{ inputs.package-name }}'
     - --platform
