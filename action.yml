@@ -133,8 +133,10 @@ outputs:
 
 ## Define the runtime of this action
 runs:
+  env:
+    RUNTIME: '${{ inputs.runtime }}'
   using: 'docker'
-  image: 'ghcr.io/bolvarak/nuget-publish:${{ inputs.runtime }}'
+  image: 'ghcr.io/bolvarak/nuget-publish:${{ env.RUNTIME }}'
   args:
     - publish
     - --configuration
