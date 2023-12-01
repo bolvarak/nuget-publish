@@ -133,7 +133,7 @@ outputs:
 ## Define the runtime of this action
 runs:
   using: 'docker'
-  image: 'ghcr.io/bolvarak/nuget-publish:latest'
+  image: 'docker://ghcr.io/bolvarak/nuget-publish:latest'
   args:
     - publish
     - --configuration
