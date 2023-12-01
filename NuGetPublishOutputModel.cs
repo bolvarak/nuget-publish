@@ -179,6 +179,13 @@ public class NuGetPublishOutputModel
     public async Task WriteAsync(NuGetPublishOutputEnum outputFormat, string outputFile = null,
         CancellationToken stoppingToken = default)
     {
+        // Check for an output file
+        if ((string.IsNullOrEmpty(outputFile) || string.IsNullOrWhiteSpace(outputFile) || !File.Exists(outputFile)) &&
+            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_OUTPUT")) &&
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_OUTPUT")) &&
+            File.Exists(Environment.GetEnvironmentVariable("GITHUB_OUTPUT")))
+            outputFile = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
+
         // Write to GitHub
         if (outputFile is not null) await WriteToOutputFileAsync(outputFile, stoppingToken);
 

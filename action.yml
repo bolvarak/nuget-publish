@@ -144,8 +144,6 @@ runs:
     - ${{ inputs.nuspec-file }}
     - --output
     - ${{ inputs.output }}
-    - --output-file
-    - ${{ env.GITHUB_OUTPUT }}
     - --package-name
     - ${{ inputs.package-name }}
     - --platform
