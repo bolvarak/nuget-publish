@@ -133,34 +133,34 @@ runs:
   args:
     - publish
     - --configuration
-    - '${{ inputs.configuration }}' \
-    - --github-organization \
-    - '${{ inputs.github-organization }}' \
-    - --nuget-api-key \
-    - '${{ inputs.nuget-api-key }}' \
-    - --nuget-auth-for-build \
-    - '${{ inputs.nuget-auth-for-build }}' \
-    - --nuget-password \
-    - '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}' \
-    - --nuget-username \
-    - '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}' \
-    - --nuspec-file \
-    - '${{ inputs.nuspec-file }}' \
+    - '${{ inputs.configuration }}'
+    - --github-organization
+    - '${{ inputs.github-organization }}'
+    - --nuget-api-key
+    - '${{ inputs.nuget-api-key }}'
+    - --nuget-auth-for-build
+    - '${{ inputs.nuget-auth-for-build }}'
+    - --nuget-password
+    - '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}'
+    - --nuget-username
+    - '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}'
+    - --nuspec-file
+    - '${{ inputs.nuspec-file }}'
     - --output
-    - '${{ inputs.output }}' \
-    - --output-file \
-    - '${{ inputs.output-file == '' && github.output || inputs.output-file }}' \
-    - --package-name \
-    - '${{ inputs.package-name }}' \
+    - '${{ inputs.output }}'
+    - --output-file
+    - '${{ inputs.output-file == '' && github.output || inputs.output-file }}'
+    - --package-name
+    - '${{ inputs.package-name }}'
     - --platform
-    - '${{ inputs.platform }}' \
-    - --project \
-    - '${{ inputs.project }}' \
-    - --scan-for-package-name \
-    - '${{ inputs.scan-for-package-name }}' \
-    - --verbosity \
-    - '${{ inputs.verbosity }}' \
-    - --version \
-    - '${{ inputs.version }}' \
-    - --working-directory \
+    - '${{ inputs.platform }}'
+    - --project
+    - '${{ inputs.project }}'
+    - --scan-for-package-name
+    - '${{ inputs.scan-for-package-name }}'
+    - --verbosity
+    - '${{ inputs.verbosity }}'
+    - --version
+    - '${{ inputs.version }}'
+    - --working-directory
     - '${{ github.workspace }}'
