@@ -13,14 +13,17 @@ RUN dotnet publish "/build/NuGet.Publish.csproj" \
     --self-contained true \
     --verbosity "minimal";
 
-## We'll need the .NET 6.0 Runtime to run our action processor
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS final
+## We'll need the .NET 6.0 SDK to run our action processor
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS final
 
-## Define our Github Actions environment
-ENV GITHUB_ACTION_ENVIRONMENT=false
+# Add the .NET 7.x SDK
+COPY --from=mcr.microsoft.com/dotnet/sdk:7.0-alpine "/usr/share/dotnet" "/usr/share/dotnet"
+
+# Add the .NET 8.0 SDK
+COPY --from=mcr.microsoft.com/dotnet/sdk:8.0-alpine "/usr/share/dotnet" "/usr/share/dotnet"
 
 ## Copy our published action processor build into place
-COPY --from=build "/publish/*" "/opt/nuget-publish/"
+COPY --from=build "/publish/NuGet.Publish" "/usr/bin/NuGet.Publish"
 
 ## Install our dependencies
 RUN apk add --no-cache \
@@ -29,4 +32,4 @@ RUN apk add --no-cache \
     libstdc++;
 
 ## Define the entrypoint into the Docker image as our action processor
-ENTRYPOINT ["/opt/nuget-publish/NuGet.Publish"]
+ENTRYPOINT ["NuGet.Publish"]

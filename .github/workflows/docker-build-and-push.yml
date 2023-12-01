@@ -1,12 +1,8 @@
 name: 'Docker Build & Push'
 on:
-  workflow_run:
+  push:
     branches:
       - 'main'
-    types:
-      - 'completed'
-    workflows:
-      - 'Image Sync'
 
 jobs:
 
@@ -17,16 +13,11 @@ jobs:
     permissions:
       contents: 'read'
       packages: 'write'
-    strategy:
-        matrix:
-            branch: [ 'net8.x', 'net7.x', 'net6.x' ]
     steps:
 
       ## Checkout the repository
-      - name: 'Checkout ${{ matrix.branch }}'
+      - name: 'Checkout'
         uses: 'actions/checkout@v4'
-        with:
-            ref: '${{ matrix.branch }}'
 
       ## Authenticate with the Docker Registry
       - name: 'Registry Authentication'
@@ -42,4 +33,4 @@ jobs:
         with:
           context: '.'
           push: true
-          tags: 'ghcr.io/${{ github.repository }}:${{ matrix.branch }}'
+          tags: 'ghcr.io/${{ github.repository }}:latest'

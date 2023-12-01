@@ -39,9 +39,6 @@ The platform to use when building the project or solution.  (values: `AnyCpu|Arm
 ## `project`
 **Required** The path, relative to the root of the repository, to the project or solution file to be packaged.
 
-## `runtime`
-The runtime to use when building the project or solution.  (values: `net8.x|net7.x|6.x`, default: `net8.x`)
-
 ## `scan-for-package-name`
 A flag that denotes whether to scan the project or solution file in an attempt to find the package name preferring `PackageId` over `AssemblyName` over `project`.  (default: `false`)'
 
@@ -98,13 +95,13 @@ The version of the generated package that was published to the NuGet Server.
 ## Example Usage
 
 ### Runtimes
-This action supports multiple different .NET runtimes.  The table below shows the supported runtimes and their corresponding `runtime` values.
+This action supports multiple different .NET SDKs which are listed below.
 
-| Runtime | Value    |
-|---------|----------|
-| 8.0     | `net8.x` |
-| 7.0     | `net7.x` |
-| 6.0     | `net6.x` |
+| .NET SDK |
+|----------|
+| 8.0      |
+| 7.0      |
+| 6.0      |
 
 ### Basic Usage
 
@@ -113,7 +110,6 @@ This action supports multiple different .NET runtimes.  The table below shows th
   with:
     nuget-api-key: ${{ secrets.NUGET_API_KEY | secrets.GITHUB_TOKEN }}
     project: 'src/MyProject/MyProject.csproj'
-    runtime: '8.x'
 ```
 
 <!--
