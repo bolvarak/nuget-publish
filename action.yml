@@ -145,7 +145,7 @@ runs:
     - --output
     - ${{ inputs.output }}
     - --output-file
-    - ${{ github.output }}
+    - ${{ env.GITHUB_OUTPUT }}
     - --package-name
     - ${{ inputs.package-name }}
     - --platform
