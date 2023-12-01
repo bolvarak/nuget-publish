@@ -129,9 +129,9 @@ outputs:
 ## Define the runtime of this action
 runs:
   env:
-    NUGET_PASSWORD: '${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}'
-    NUGET_USERNAME: '${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}'
-    OUTPUT_FILE: '${{ inputs.output-file == '' && github.output || inputs.output-file }}'
+    NUGET_PASSWORD: ${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}
+    NUGET_USERNAME: ${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}
+    OUTPUT_FILE: ${{ inputs.output-file == '' && github.output || inputs.output-file }}
   using: 'docker'
   image: 'ghcr.io/bolvarak/nuget-publish:latest'
   args:
