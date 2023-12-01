@@ -50,10 +50,6 @@ inputs:
     description: 'The output format of the application.  (values: Json|Plain|Silent|Xml, default: Silent)'
     required: false
 
-  output-file:
-    description: 'The path, relative to the root of the repository, to the file to which the output should be written.  (use github.output if unsure.)'
-    required: false
-
   package-name:
     description: 'The name of the package to generate, that will be published to the NuGet Server.'
     required: false
@@ -149,7 +145,7 @@ runs:
     - --output
     - ${{ inputs.output }}
     - --output-file
-    - ${{ inputs.output-file }}
+    - ${{ github.output }}
     - --package-name
     - ${{ inputs.package-name }}
     - --platform

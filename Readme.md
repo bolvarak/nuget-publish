@@ -27,9 +27,6 @@ The path, relative to the root of the repository, to the NuSpec file.
 ## `output`
 The output format of the application.  (values: `Json|Plain|Silent|Xml`, default: `Silent`)
 
-## `output-file`
-The path, relative to the root of the repository, to the file to which the output should be written. (use `${{ github.output }}` if unsure).
-
 ## `package-name`
 The name of the package to generate, that will be published to the NuGet Server.
 
