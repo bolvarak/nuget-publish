@@ -81,10 +81,6 @@ inputs:
     description: 'The static version for the NuGet package.'
     required: false
 
-  workspace:
-    description: 'The absolute path to the directory in which to execute the build process (use github.workspace if unsure).'
-    required: true
-
 ## Define the outputs from this action
 outputs:
 
@@ -167,4 +163,4 @@ runs:
     - --version
     - ${{ inputs.version }}
     - --working-directory
-    - ${{ inputs.workspace }}
+    - '/github/workspace'

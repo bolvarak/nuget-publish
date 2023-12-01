@@ -48,9 +48,6 @@ The output level for the build process.  (values: `Detailed|Diagnostic|Minimal|N
 ## `version`
 The static version for the NuGet package.
 
-## `workspace`
-The absolute path to the directory in which to execute the build process (use `${{ github.workspace }}` if unsure).
-
 ## Outputs
 
 ## `package-name`
