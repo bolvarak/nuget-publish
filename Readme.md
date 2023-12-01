@@ -28,7 +28,7 @@ The path, relative to the root of the repository, to the NuSpec file.
 The output format of the application.  (values: `Json|Plain|Silent|Xml`, default: `Silent`)
 
 ## `output-file`
-The path, relative to the root of the repository, to the file to which the output should be written. (default: `github.output`).
+The path, relative to the root of the repository, to the file to which the output should be written. (use `${{ github.output }}` if unsure).
 
 ## `package-name`
 The name of the package to generate, that will be published to the NuGet Server.
@@ -49,7 +49,7 @@ The output level for the build process.  (values: `Detailed|Diagnostic|Minimal|N
 The static version for the NuGet package.
 
 ## `workspace`
-The working directory for the processes, this defaults to the GITHUB_WORKSPACE environment variable or the containing directory of the <project> file.
+The absolute path to the directory in which to execute the build process (use `${{ github.workspace }}` if unsure).
 
 ## Outputs
 

@@ -51,7 +51,7 @@ inputs:
     required: false
 
   output-file:
-    description: 'The path, relative to the root of the repository, to the file to which the output should be written.  (default: github.output)'
+    description: 'The path, relative to the root of the repository, to the file to which the output should be written.  (use github.output if unsure.)'
     required: false
 
   package-name:
@@ -80,6 +80,10 @@ inputs:
   version:
     description: 'The static version for the NuGet package.'
     required: false
+
+  workspace:
+    description: 'The absolute path to the directory in which to execute the build process (use github.workspace if unsure).'
+    required: true
 
 ## Define the outputs from this action
 outputs:
@@ -141,15 +145,15 @@ runs:
     - --nuget-auth-for-build
     - ${{ inputs.nuget-auth-for-build }}
     - --nuget-password
-    - ${{ inputs.nuget-password == '' && inputs.nuget-api-key || inputs.nuget-password }}
+    - ${{ inputs.nuget-password }}
     - --nuget-username
-    - ${{ inputs.nuget-username == '' && github.actor || inputs.nuget-username }}
+    - ${{ inputs.nuget-username }}
     - --nuspec-file
     - ${{ inputs.nuspec-file }}
     - --output
     - ${{ inputs.output }}
     - --output-file
-    - ${{ inputs.output-file == '' && github.output || inputs.output-file }}
+    - ${{ inputs.output-file }}
     - --package-name
     - ${{ inputs.package-name }}
     - --platform
@@ -163,4 +167,4 @@ runs:
     - --version
     - ${{ inputs.version }}
     - --working-directory
-    - ${{ github.workspace }}
+    - ${{ inputs.workspace }}
